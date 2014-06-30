@@ -148,8 +148,9 @@ unsigned char parse_linesensors(int times)
 	return parse_linesensors(times - 1);
 }
 
-void srf02()
+int srf02()
 {
+	int result = 0;
 	Wire.beginTransmission(112);    //entspricht Adresse 0xE0
 	Wire.write(byte(0x00));         //Befehlsregister 0x00
 	Wire.write(byte(0x51));         //Werte in cm
@@ -161,9 +162,9 @@ void srf02()
 	Wire.requestFrom(112, 2);        //2 bytes von Adresse 112
 	if (2 <= Wire.available())
 	{
-		//f = Wire.read();
-		//f = f << 8;
-		//f |= Wire.read();
+		result = Wire.read();
+		result = result << 8;
+		result |= Wire.read();
 	}
 }
 
@@ -192,14 +193,14 @@ void loop()
 				if (CHECK_FLAG(flags, SENSORFLAG_LEFT) || CHECK_FLAG(flags, SENSORFLAG_RIGHT)) {
 					task = TASK_EDGE_CORRECTION;
 					taskTimer.Reset();
-					Serial.println("Correction mode edge");
-					Serial.println(flags);
+					Serial.println("Correction mode edge\n");
+					//Serial.println(flags);
 				}
 				else {
 					task = TASK_LINE_CORRECTION;
 					taskTimer.Reset();
-					Serial.println("Correction mode line");
-					Serial.println(flags);
+					Serial.println("Correction mode line\n");
+					//Serial.println(flags);
 				}
 			}
 
@@ -311,8 +312,10 @@ void loop()
 			break;
 
 		case TASK_LOST_LINE:
+			Serial.println("Lost line. Reversing...");
 			g_movementMemory.Reverse(LINE_LOST_REVERSE_TIME);
 			taskTimer.Reset();
+			Serial.println("...Done\n");
 			task = TASK_MOVE;
 			break;
 		case TASK_LAST:
