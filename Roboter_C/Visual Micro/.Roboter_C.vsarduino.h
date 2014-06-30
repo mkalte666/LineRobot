@@ -43,6 +43,7 @@ void drive(MOVEMENTSTATE movement);
 unsigned char parse_linesensors(int times);
 void srf02();
 //
+MOVEMENTSTATE	ReverseMovement(MOVEMENTSTATE type);
 
 #include "C:\Program Files (x86)\Arduino\hardware\arduino\cores\arduino\arduino.h"
 #include "C:\Program Files (x86)\Arduino\hardware\arduino\variants\mega\pins_arduino.h" 

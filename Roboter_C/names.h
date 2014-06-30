@@ -1,6 +1,9 @@
 #ifndef NAMES_HEADER
 #define NAMES_HEADER
 
+
+
+
 //Pin definitions
 #define MOTOR_L_DIRECTION	8	//Direktion of the left motor
 #define MOTOR_L_SPEED		6	//Speed of the right motor
@@ -21,7 +24,21 @@
 //Checks flag f in x
 #define CHECK_FLAG( x, f ) ( x & (1<<f) )
 
+//Time management
+class timer
+{
+public:
+	timer();
+	~timer();
 
+	void Set(unsigned long time);
+	void Reset();
+	unsigned long Get();
+
+private:
+	unsigned long	m_curtime;
+	unsigned long	m_timer;
+};
 
 //Serial Feedback
 #define SERIAL_BAUDRATE		9600
@@ -53,7 +70,38 @@ enum MOVEMENTSTATE
 	MOVE_RIGHT_ROTATE,
 	MOVE_LEFT_ROTATE_FAST,
 	MOVE_RIGHT_ROTATE_FAST,
-	MOVE_LAST
+	MOVE_LAST,
+	//After here the Reverse states
+};
+
+MOVEMENTSTATE	ReverseMovement(MOVEMENTSTATE type);
+void raw_drive(MOTORSTATE left, MOTORSTATE right, int sppedL, int speedR);
+void drive(MOVEMENTSTATE movement);
+unsigned char parse_linesensors(int times = 0);
+
+#define MAX_MEMORY_EVENTS	1000
+
+struct MovementMemoryEvent
+{
+	MOVEMENTSTATE	type;
+	unsigned long	time;
+};
+
+//Movement memory
+class MovementMemory
+{
+public:
+	MovementMemory();
+	~MovementMemory();
+	
+
+	void AddEvent(MOVEMENTSTATE action, unsigned long time);
+
+	void Reverse(unsigned long time);
+private:
+	MovementMemoryEvent	*m_actions;
+	unsigned int		m_size;
+	
 };
 
 //Sensorflags
@@ -73,6 +121,7 @@ enum TASKSTAKE
 	TASK_EDGE_CORRECTION,
 	TASK_EDGE_CORRECTION_RUNNING,
 	TASK_EDGE_CORRECTION_FINALISE,
+	TASK_LOST_LINE,
 	TASK_OBSTACLE,
 	TASK_LINE_DECISION,
 
@@ -86,12 +135,12 @@ enum EDGESTATE
 	EDGE_NONE
 };
 //Line correction constant values
-#define LINE_CORRECTION_MAX_TIME			40
-#define LINE_CORRECTION_CRITICAL_MAX_TIME	1200
-#define EDGE_CORRECTION_MAX_TIME			300	
+#define LINE_CORRECTION_MAX_TIME			100
+#define LINE_CORRECTION_CRITICAL_MAX_TIME	1500
+#define EDGE_CORRECTION_MAX_TIME			5000	
 
-void raw_drive(MOTORSTATE left, MOTORSTATE right, int sppedL, int speedR);
-void drive(MOVEMENTSTATE movement);
-unsigned char parse_linesensors(int times = 0);
+#define LINE_LOST_REVERSE_TIME				15000
+
+
 
 #endif //NAMES_HEADER
